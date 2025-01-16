@@ -11,6 +11,7 @@ A Python implementation of a Partially Observable Markov Decision Process (POMDP
   - Actions taken by the mouse.
   - Belief state evolution.
   - Observations and distance to the target port.
+  - Selected actions.
 
 ## Installation
 1. Clone the repository:
