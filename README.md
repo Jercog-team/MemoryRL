@@ -16,5 +16,5 @@ A Python implementation of a Partially Observable Markov Decision Process (POMDP
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Jercog-team/MemoryRL.git
+   git clone https://<GITHUB TOKEN>:x-oauth-basic@github.com/Jercog-team/MemoryRL
    cd MouseBehaviorPOMDP
