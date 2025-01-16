@@ -23,10 +23,10 @@ A Python implementation of a Partially Observable Markov Decision Process (POMDP
 
 2. Install Dependencies
 
-Ensure you have Python installed along with the required libraries:
+    Ensure you have Python installed along with the required libraries:
 
-     ```bash
-      pip install numpy matplotlib
+    ```bash
+    pip install numpy matplotlib
 
 
 3. Run the Simulation
