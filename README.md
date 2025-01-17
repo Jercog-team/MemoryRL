@@ -95,6 +95,38 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
   As the agent updates its belief state, it starts focusing more on the correct port but continues to explore.
 
 
+## Results and Visualizations
+
+### Day 1
+
+Correct Port: 4
+
+![Day 1 metrics](img/Day1.png)
+
+### Day 2
+
+Correct Port: 1
+
+![Day 2 metrics](img/Day2.png)
+
+### Day 3
+
+Correct Port: 6
+
+![Day 3 metrics](img/Day3.png)
+
+### Day 4
+
+Correct Port: 3
+
+![Day 4 metrics](img/Day4.png)
+
+### Day 5
+
+Correct Port: 3
+
+![Day 5 metrics](img/Day5.png)
+
 ## How to Use the Model
 
 1. Clone the Repository
