@@ -133,7 +133,7 @@ Correct Port: 3
 
    ```bash
    git clone https://<GITHUB TOKEN>:x-oauth-basic@github.com/Jercog-team/MemoryRL
-   cd MouseBehaviorPOMDP
+   cd MemoryRL
 
 2. Install Dependencies
 
