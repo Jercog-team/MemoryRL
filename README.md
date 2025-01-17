@@ -86,7 +86,7 @@ A Python implementation of a Partially Observable Markov Decision Process (POMDP
 3. Run the Simulation
    
    ```bash
-    python mouse_pomdp.py
+    python main.py
 
 This will execute the simulation and generate the visualizations.
 
