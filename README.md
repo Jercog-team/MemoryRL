@@ -34,7 +34,11 @@ A Python implementation of a Partially Observable Markov Decision Process (POMDP
 
 ### 8-Port Maze Task
 
-This model is designed to replicate the 8-Port Maze Task, a standard experimental setup in behavioral neuroscience used to study spatial learning and decision-making in rodents. The key elements of this task include:
+This model is designed to replicate the 8-Port Maze Task, a standard experimental setup in behavioral neuroscience used to study spatial learning and decision-making in rodents. 
+
+![8Port Maze Experiment](img/8port.png)
+
+The key elements of this task include:
 
   - A circular arena with 8 equally spaced ports.
     
