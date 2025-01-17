@@ -31,6 +31,23 @@ A Python implementation of a Partially Observable Markov Decision Process (POMDP
 
   - Reward Function (R): The numerical feedback given for different actions.
 
+
+### 8-Port Maze Task
+
+This model is designed to replicate the 8-Port Maze Task, a standard experimental setup in behavioral neuroscience used to study spatial learning and decision-making in rodents. The key elements of this task include:
+
+  - A circular arena with 8 equally spaced ports.
+  
+  - The mouse starts from a central location and can poke different ports.
+  
+  - Only one port provides water, and it becomes available after a delay.
+  
+  - Rodents exhibit exploratory behavior, often poking nearby ports before consistently selecting the correct one.
+  
+  - Learning is assessed by tracking how quickly the subject shifts from exploration to consistent selection of the correct port.
+
+This model aims to capture these dynamics by using a POMDP framework, where the agent must infer the correct port over time based on noisy observations and rewards.
+
 ### Behavioral Modeling
 
   In neuroscience and psychology, reinforcement learning (RL) is used to model how animals learn from rewards and adapt their behavior. This model follows trial-and-error learning, where the mouse gradually increases its preference for the correct port while still exhibiting exploration.
