@@ -37,10 +37,16 @@ A Python implementation of a Partially Observable Markov Decision Process (POMDP
 This model is designed to replicate the 8-Port Maze Task, a standard experimental setup in behavioral neuroscience used to study spatial learning and decision-making in rodents. The key elements of this task include:
 
   - A circular arena with 8 equally spaced ports.
+    
+  - Each day is split into two phases: training and recall.
+
+      - Training phase: The mouse learns the correct port by interacting with the environment.
+      
+      - Recall phase: The mouse attempts to remember the correct port based on prior experience.
   
   - The mouse starts from a central location and can poke different ports.
   
-  - Only one port provides water, and it becomes available after a delay.
+  - Only one port provides water, and it becomes available when the animal come into the trigger zone.
   
   - Rodents exhibit exploratory behavior, often poking nearby ports before consistently selecting the correct one.
   
