@@ -127,25 +127,55 @@ Correct Port: 3
 
 ![Day 5 metrics](img/Day5.png)
 
-## How to Use the Model
+## Updated Project Structure
+
+The project is now organized as follows:
+
+```
+MemoryRL/
+├── main.py                # Entry point for running the simulation
+├── README.md              # Project documentation
+├── setup.py               # Packaging and installation
+├── src/                   # Source code
+│   ├── mouse_behavior_pomdp.py  # Core POMDP logic
+│   ├── agents/            # Submodule for agent implementations
+│   │   └── __init__.py    # Makes `agents` a Python package
+│   ├── utils/             # Submodule for utility functions
+│   │   └── __init__.py    # Makes `utils` a Python package
+│   └── visualization/     # Submodule for visualization functions
+│       └── __init__.py    # Makes `visualization` a Python package
+├── img/                   # Images for documentation and visualization
+│   ├── 8port.png          # Diagram of the 8-port maze
+│   ├── Day1.png           # Example visualization for Day 1
+│   ├── Day2.png           # Example visualization for Day 2
+│   ├── Day3.png           # Example visualization for Day 3
+│   ├── Day4.png           # Example visualization for Day 4
+│   └── Day5.png           # Example visualization for Day 5
+└── __pycache__/           # Compiled Python files
+```
+
+## Updated Instructions
 
 1. Clone the Repository
 
    ```bash
    git clone https://<GITHUB TOKEN>:x-oauth-basic@github.com/Jercog-team/MemoryRL
    cd MemoryRL
+   ```
 
 2. Install Dependencies
 
-    Ensure you have Python installed along with the required libraries:
+   Ensure you have Python installed along with the required libraries:
 
-    ```bash
-    pip install numpy matplotlib
+   ```bash
+   pip install -e .
+   ```
 
 3. Run the Simulation
-   
+
    ```bash
-    python main.py
+   python main.py
+   ```
 
 This will execute the simulation and generate the visualizations.
 

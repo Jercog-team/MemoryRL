@@ -1,4 +1,4 @@
-from mouse_behavior_pomdp import MouseBehaviorPOMDP
+from src.mouse_behavior_pomdp import MouseBehaviorPOMDP
 
 def main():
     print('*********************************************** DAY 1 ***********************************************')
