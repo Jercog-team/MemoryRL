@@ -1,4 +1,3 @@
-
 import numpy.random as npr
 import numpy as np
 import numpy as np
@@ -8,7 +7,7 @@ from scipy.special import i0
 from filtering_functions import hist_all, circular_distance
 import copy
 from memoryIndex_functions import MemoryIndexbyTrl
-from HMM_EM import HMMPablo
+# from HMM_EM import HMMPablo
 
 
 

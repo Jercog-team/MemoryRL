@@ -1,5 +1,5 @@
 Metadata-Version: 2.4
-Name: memory_rl
+Name: memoryrl
 Version: 0.2.0
 Summary: A POMDP-based simulation of mouse behavior in multi-port experiments.
 Home-page: https://github.com/Jercog-team/MemoryRL

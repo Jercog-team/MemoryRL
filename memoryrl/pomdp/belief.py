@@ -1,5 +1,7 @@
 import numpy as np
 import pickle
+import importlib.resources as pkg_resources
+from distributions import __name__ as dist_pkg
 
 
 def initialize_belief_von_misses(kappa=3, w_today=0.3, w_yesterday=0.2, n_ports=8, n_trials=20, water_availability_dist=True):
@@ -39,7 +41,7 @@ def initialize_belief_von_misses(kappa=3, w_today=0.3, w_yesterday=0.2, n_ports=
     f_r /= f_r.sum()
     
     if water_availability_dist:
-        with open('../../distributions/water_aval_dist.pkl', 'rb') as f1:
+        with pkg_resources.files(dist_pkg).joinpath("water_aval_dist.pkl").open("rb") as f1:
             water_availability_dist = pickle.load(f1)
         
         # Adjust the distribution to match n_trials
@@ -60,7 +62,7 @@ def initialize_belief_von_misses(kappa=3, w_today=0.3, w_yesterday=0.2, n_ports=
 
     last_visit = np.zeros(n_ports, dtype=int)
     
-    return b_prior, r_true_today, tau_true, last_visit, r_true_yesterday
+    return b_prior, r_true_today, tau_true, last_visit, r_true_yesterday, f_r
 
 
 
@@ -96,7 +98,9 @@ def initialize_belief_deltas(w_today=0.3, w_yesterday=0.2, n_ports=8, n_trials=2
     f_r /= f_r.sum()  # Normalize the combined belief
 
     if water_availability_dist:
-        with open('../../distributions/water_aval_dist.pkl', 'rb') as f1:
+
+
+        with pkg_resources.files(dist_pkg).joinpath("water_aval_dist.pkl").open("rb") as f1:
             water_availability_dist = pickle.load(f1)
         
         # Adjust the distribution to match n_trials
@@ -120,7 +124,7 @@ def initialize_belief_deltas(w_today=0.3, w_yesterday=0.2, n_ports=8, n_trials=2
     # Initialize last visit times
     last_visit = np.zeros(n_ports, dtype=int)
     
-    return b_prior, r_true_today, tau_true, last_visit, r_true_yesterday
+    return b_prior, r_true_today, tau_true, last_visit, r_true_yesterday, f_r
 
 
 

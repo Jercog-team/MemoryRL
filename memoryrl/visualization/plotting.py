@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 def plot_strategy_evolution(strategy_counts):
     """

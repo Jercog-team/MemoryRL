@@ -1,13 +1,24 @@
 import numpy as np
 import random
 import torch
-from memoryrl.pomdp.belief import initialize_belief, update_belief
+from memoryrl.pomdp.belief import initialize_belief_von_misses, initialize_belief_deltas, update_belief
 from memoryrl.pomdp.greedy_policy import greedy_policy_marginal_belief, greedy_policy_last_visit
-from memoryrl.utils.data_processing import plot_histogram
+from memoryrl.visualization.plotting import plot_histogram
 from memoryrl.agents.agents import DQNAgent
+import pickle
+import importlib.resources as pkg_resources
+from distributions import __name__ as dist_pkg
 
 
-def simulate_POMDP(n_episodes=500, kappa=0.5, w_today=0.3, w_yesterday=0.2, greedy_policy='marginal belief', water_availability_dist=True, n_ports=8, n_trials=20):
+def simulate_POMDP(n_episodes=500,
+                   kappa=0.5,
+                   w_today=0.3,
+                   w_yesterday=0.2,
+                   greedy_policy='marginal belief',
+                   water_availability_dist=True,
+                   n_ports=8,
+                   n_trials=20,
+                   belief_init='von misses'):
     """
     Simulates a Partially Observable Markov Decision Process (POMDP) using a greedy policy.
 
@@ -30,7 +41,12 @@ def simulate_POMDP(n_episodes=500, kappa=0.5, w_today=0.3, w_yesterday=0.2, gree
     poke_sequences_sim = [] # Track the sequences of pokes for each episode
     
     for episode in range(n_episodes):
-        b, r_true, tau_true, last_visit, prev_r_true, f_theta = initialize_belief(kappa, w_today=w_today, w_yesterday=w_yesterday, water_availability_dist=water_availability_dist)
+        
+        if belief_init == 'von misses':
+            b, r_true, tau_true, last_visit, prev_r_true, f_theta = initialize_belief_von_misses(kappa=kappa, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+        else:   
+            b, r_true, tau_true, last_visit, prev_r_true, f_theta = initialize_belief_deltas( w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+        
         dist = abs(r_true - prev_r_true) % 5
         poke_distribution = np.zeros(n_ports)
         done = False
@@ -65,7 +81,19 @@ def simulate_POMDP(n_episodes=500, kappa=0.5, w_today=0.3, w_yesterday=0.2, gree
     return simulated_hist, distances_sim, poke_sequences_sim
 
 
-def simulate_LSTM_POMDP(n_episodes=5000, max_pokes=4, epsilon_decay=0.99, epsilon_min=0.1, pokes_per_trial_dist=None, water_availability_dist=True, kappa=3, w_today=0.3, w_yesterday=0.2, epsilon=0.2, n_ports=8, n_trials=20):
+def simulate_LSTM_POMDP(n_episodes=5000,
+                        max_pokes=4,
+                        epsilon_decay=0.99,
+                        epsilon_min=0.1,
+                        pokes_per_trial_dist=None,
+                        water_availability_dist=True,
+                        kappa=3,
+                        w_today=0.3,
+                        w_yesterday=0.2,
+                        epsilon=0.2,
+                        n_ports=8,
+                        n_trials=20,
+                        belief_init='von misses'):
     """
     Simulates a POMDP using an LSTM-based Deep Q-Network (DQN) agent.
 
@@ -92,9 +120,18 @@ def simulate_LSTM_POMDP(n_episodes=5000, max_pokes=4, epsilon_decay=0.99, epsilo
     poke_sequences_sim = []
     arr_ports = []
     distances_sim = {0: [], 1: [], 2: [], 3: [], 4: []}
+
+    if not pokes_per_trial_dist:
+        with pkg_resources.files(dist_pkg).joinpath("pokes_per_trial_dist.pkl").open("rb") as f1:
+            pokes_per_trial_dist = pickle.load(f1)
     
     for episode in range(n_episodes):
-        b_prior, r_true, tau_true, last_visit, prev_r_true = initialize_belief(kappa=kappa, w_today=w_today, w_yesterday=w_yesterday, water_availability_dist=water_availability_dist)
+
+        if belief_init == 'von misses':
+            b_prior, r_true, tau_true, last_visit, prev_r_true, _ = initialize_belief_von_misses(kappa=kappa, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+        else:   
+            b_prior, r_true, tau_true, last_visit, prev_r_true, _ = initialize_belief_deltas( w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+        
         dist = abs(r_true - prev_r_true) % 5
         poke_distribution = np.zeros(n_ports)
         done = False

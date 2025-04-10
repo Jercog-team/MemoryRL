@@ -2,12 +2,11 @@ README.md
 setup.py
 memoryrl/agents/__init__.py
 memoryrl/agents/agents.py
-memoryrl/memory_rl.egg-info/PKG-INFO
-memoryrl/memory_rl.egg-info/SOURCES.txt
-memoryrl/memory_rl.egg-info/dependency_links.txt
-memoryrl/memory_rl.egg-info/entry_points.txt
-memoryrl/memory_rl.egg-info/requires.txt
-memoryrl/memory_rl.egg-info/top_level.txt
+memoryrl/memoryrl.egg-info/PKG-INFO
+memoryrl/memoryrl.egg-info/SOURCES.txt
+memoryrl/memoryrl.egg-info/dependency_links.txt
+memoryrl/memoryrl.egg-info/requires.txt
+memoryrl/memoryrl.egg-info/top_level.txt
 memoryrl/utils/HMM_EM.py
 memoryrl/utils/__init__.py
 memoryrl/utils/data_processing.py

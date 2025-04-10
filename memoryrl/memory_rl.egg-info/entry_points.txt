@@ -1,2 +1,0 @@
-[console_scripts]
-run_mouse_pomdp = main:main

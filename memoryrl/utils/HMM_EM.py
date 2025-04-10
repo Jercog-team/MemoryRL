@@ -1,12 +1,10 @@
 import numpy.random as npr
-import ssm
 import ssm.observations as obs
 import ssm.hierarchical as hier
 import ssm.stats as stats
 from ssm.observations import VonMisesObservations, Observations
 from ssm.transitions import StationaryTransitions
 from ssm.hmm import HMM
-from ssm.util import ensure_args_are_lists, one_hot
 import ssm.transitions as trans
 from scipy.special import logsumexp
 # from ssm.messages import hmm_expected_states, hmm_filter, hmm_sample, viterbi
