@@ -7,8 +7,8 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Jercog-team/MemoryRL",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(where="memoryrl"),
+    package_dir={"": "memoryrl"},
     install_requires=[
         "numpy",
         "matplotlib"
