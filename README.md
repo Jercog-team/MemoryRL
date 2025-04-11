@@ -139,7 +139,7 @@ $$
   - **Termination probability**:
 
 $$
-T_t(p) = m_t(p) \cdot \frac{t - \text{last\_visit}(p)}{T - \text{last\_visit}(p)}
+T_t(p) = m_t(p) \cdot \frac{t - \text{last\\_visit}(p)}{T - \text{last\\_visit}(p)}
 $$
 
   - **Q-value recursion**:
