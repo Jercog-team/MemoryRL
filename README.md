@@ -67,9 +67,7 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 - **States**  
   The hidden state at each episode is a tuple:
 
-  $$
-  s = (r, \tau)
-  $$
+  $$s = (r, \tau)$$
 
   Where:
   - $\( r \in \{0, \dots, 7\} \)$ is the reward port.
