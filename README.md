@@ -78,16 +78,14 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 - **Actions**  
   At each poke within a trial, the agent selects a port to poke:
 
-  $$
-  a_t \in \{0, \dots, 7\}
-  $$
+  $$a_t \in \{0, \dots, 7\}$$
 
 - **Observations**  
   The observation after each poke is binary:
 
-  $$
-  o_t \in \{0, 1\}
-  $$
+$$
+o_t \in \{0, 1\}
+$$
 
   Reward is received only if the poke hits the correct port *after* reward becomes available:
 
