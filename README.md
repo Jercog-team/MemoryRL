@@ -138,7 +138,7 @@ $$
 
   - **Termination probability**:
 
-  <div align="center">$$T_t(p) = m_t(p) \cdot \frac{t - \text{last\\_visit}(p)}{T - \text{last\\_visit}(p)}$$</div>
+  <div align="center">$$T_t(p) = m_t(p) \cdot \frac{t - \text{last\_visit}(p)}{T - \text{last\_visit}(p)}$$</div>
 
   - **Q-value recursion**:
 
