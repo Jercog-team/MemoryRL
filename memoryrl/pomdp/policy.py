@@ -59,7 +59,7 @@ def bellman_policy(state, b_new, last_visit, current_trial, n_trials=20, gamma=0
     marginal_belief = np.sum(b_new, axis=1)
 
     def termination_probability(p):
-        lv = last_visit.get(p, -1)
+        lv = last_visit[p]
         if lv >= n_trials:
             return 0
         numerator = current_trial - lv

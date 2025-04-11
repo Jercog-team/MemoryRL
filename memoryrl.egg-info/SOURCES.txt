@@ -27,6 +27,7 @@ memoryrl/agents/__init__.py
 memoryrl/agents/agents.py
 memoryrl/pomdp/__init__.py
 memoryrl/pomdp/belief.py
+memoryrl/pomdp/policy.py
 memoryrl/simulations/__init__.py
 memoryrl/simulations/simulations.py
 memoryrl/utils/HMM_EM.py

@@ -64,35 +64,107 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 
 ## Model Implementation
 
-### States
+- **States**  
+  The hidden state at each episode is a tuple:
 
-  The agent (mouse) is in one of 8 ports.
+  $$
+  s = (r, \tau)
+  $$
 
-### Actions
+  Where:
+  - \( r \in \{0, \dots, 7\} \) is the reward port.
+  - \( \tau \in \{0, \dots, T-1\} \) is the trial in which the reward becomes available.
+  - The total number of hidden states is \( 8 \times T \).
+  - The state is static during an episode; the transition matrix is the identity.
 
-  The mouse can poke any of the 8 ports in an attempt to find the correct one.
+- **Actions**  
+  At each poke within a trial, the agent selects a port to poke:
 
-### Observations
+  $$
+  a_t \in \{0, \dots, 7\}
+  $$
 
-  - Noisy Distance: The mouse receives an estimate of how far the selected port is from the correct one.
+- **Observations**  
+  The observation after each poke is binary:
 
-  - Reward Availability: The agent only gets a 1 (water available) when poking the correct port after a random delay.
+  $$
+  o_t \in \{0, 1\}
+  $$
 
-### Rewards
+  Reward is received only if the poke hits the correct port *after* reward becomes available:
 
-  - 1.0 for choosing the correct port after water is available.
+  $$
+  P(o_t = 1 \mid a_t, r, \tau) = \mathbb{1}(a_t = r) \cdot \mathbb{1}(t \geq \tau)
+  $$
 
-  - 0.3 for poking an adjacent port.
-  
-  - 0.1 for poking a port two steps away.
-  
-  - 0.0 for poking farther ports.
+- **Beliefs**  
+  The agent maintains a belief distribution over the hidden state:
 
-### Exploration vs. Exploitation
+  $$
+  b_t(r, \tau) = P(r, \tau \mid o_{1:t}, a_{1:t})
+  $$
 
-  The model encourages exploratory behavior by allowing the agent to receive small rewards for nearby ports.
-  
-  As the agent updates its belief state, it starts focusing more on the correct port but continues to explore.
+  The marginal belief over ports is:
+
+  $$
+  m_t(r) = \sum_{\tau} b_t(r, \tau)
+  $$
+
+- **Reward Function**  
+  The agent receives a reward of 1 if water is delivered:
+
+  $$
+  r_t = o_t
+  $$
+
+  The episode terminates immediately after the first reward is received.
+
+---
+
+### Policy Options
+
+- **Marginal Belief (Greedy)**  
+  Chooses the port with the highest marginal belief:
+
+  $$
+  a_t = \arg\max_r m_t(r)
+  $$
+
+- **Last Visit**  
+  Uses a mixture of the prior and the recency of visits to select the next action.
+
+- **Bellman Optimal**  
+  Computes the action that maximizes the expected future return based on recursive Q-values.
+
+  - **Termination probability**:
+
+    $$
+    T_t(p) = m_t(p) \cdot \frac{t - \text{last\_visit}(p)}{T - \text{last\_visit}(p)}
+    $$
+
+  - **Q-value recursion**:
+
+    $$
+    Q(s, a) = T_t(p) + \gamma \cdot (1 - T_t(p)) \cdot \max_{a'} Q(s', a')
+    $$
+
+---
+
+### Transition Model
+
+- The hidden state \( s = (r, \tau) \) is static.
+- Belief transitions are deterministic given the action and outcome.
+- If a reward is received, the agent enters a terminal state and the episode ends.
+
+---
+
+### Termination
+
+The episode ends immediately upon receiving the first water reward:
+
+$$
+o_t = 1 \Rightarrow \text{terminate}
+$$
 
 
 ## Results and Visualizations
@@ -136,14 +208,28 @@ MemoryRL/
 ├── main.py                # Entry point for running the simulation
 ├── README.md              # Project documentation
 ├── setup.py               # Packaging and installation
-├── src/                   # Source code
-│   ├── mouse_behavior_pomdp.py  # Core POMDP logic
+├── memoryrl/              # Source code
+│   ├── __init__.py        # Makes `memoryrl` a Python package
 │   ├── agents/            # Submodule for agent implementations
-│   │   └── __init__.py    # Makes `agents` a Python package
+│   │   ├── __init__.py    # Makes `agents` a Python package
+│   │   └── agents.py      # Core agent logic
+│   ├── pomdp/             # Submodule for POMDP-related logic
+│   │   ├── __init__.py    # Makes `pomdp` a Python package
+│   │   ├── belief.py      # Belief state management
+│   │   └── policy.py      # Policy-related functions
+│   ├── simulations/       # Submodule for running simulations
+│   │   ├── __init__.py    # Makes `simulations` a Python package
+│   │   └── simulations.py # Simulation logic
 │   ├── utils/             # Submodule for utility functions
-│   │   └── __init__.py    # Makes `utils` a Python package
+│   │   ├── __init__.py    # Makes `utils` a Python package
+│   │   ├── data_processing.py # Data processing utilities
+│   │   ├── filtering_functions.py # Filtering-related utilities
+│   │   ├── HMM_EM.py      # Hidden Markov Model utilities
+│   │   └── memoryIndex_functions.py # Memory index utilities
 │   └── visualization/     # Submodule for visualization functions
-│       └── __init__.py    # Makes `visualization` a Python package
+│       ├── __init__.py    # Makes `visualization` a Python package
+│       ├── animation.py   # Animation-related utilities
+│       └── plotting.py    # Plotting-related utilities
 ├── img/                   # Images for documentation and visualization
 │   ├── 8port.png          # Diagram of the 8-port maze
 │   ├── Day1.png           # Example visualization for Day 1
@@ -160,7 +246,7 @@ MemoryRL/
 
    ```bash
    git clone https://<GITHUB TOKEN>:x-oauth-basic@github.com/Jercog-team/MemoryRL
-   cd MemoryRL
+   cd memoryrl
    ```
 
 2. Install Dependencies
