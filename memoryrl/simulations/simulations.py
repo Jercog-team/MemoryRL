@@ -1,5 +1,4 @@
 import numpy as np
-import random
 import torch
 from memoryrl.pomdp.belief import initialize_belief_von_misses, initialize_belief_deltas, update_belief
 from pomdp.policy import greedy_policy_marginal_belief, greedy_policy_last_visit, bellman_policy
@@ -16,6 +15,7 @@ def simulate_POMDP(n_episodes=500,
                    w_yesterday=0.2,
                    policy='marginal belief',
                    water_availability_dist=True,
+                   pokes_per_trial_dist=None,
                    n_ports=8,
                    n_trials=20,
                    belief_init='von misses'):
@@ -27,10 +27,13 @@ def simulate_POMDP(n_episodes=500,
         kappa (float): Parameter for belief initialization.
         w_today (float): Weight for today's belief update.
         w_yesterday (float): Weight for yesterday's belief update.
-        greedy_policy (str): Policy type ('marginal belief' or 'last visit').
+        policy (str): Policy type ('marginal belief', 'last visit' or 'bellman').
         water_availability_dist (bool): Whether to use water availability distribution.
+        pokes_per_trial_dist (list): Distribution of pokes per trial.
         n_ports (int): Number of ports in the environment.
         n_trials (int): Number of trials per episode.
+        belief_init (str): Method for initializing the belief state. 
+            Options are 'von misses' or 'deltas'.
 
     Returns:
         tuple: Simulated histogram, distances simulation, and poke sequences simulation.
@@ -39,6 +42,10 @@ def simulate_POMDP(n_episodes=500,
     Big_Hist_data = []  # Track the poke distributions for each episode
     distances_sim = {0: [], 1: [], 2: [], 3: [], 4: []}
     poke_sequences_sim = [] # Track the sequences of pokes for each episode
+
+    if not pokes_per_trial_dist:
+        with pkg_resources.files(dist_pkg).joinpath("pokes_per_trial_dist.pkl").open("rb") as f1:
+            pokes_per_trial_dist = pickle.load(f1)
     
     for episode in range(n_episodes):
         
@@ -53,7 +60,7 @@ def simulate_POMDP(n_episodes=500,
         
         for t in range(n_trials):
             poke_sequences_sim_trial = []
-            max_pokes = random.randint(1, 4)
+            max_pokes = np.random.choice(pokes_per_trial_dist)
             for _ in range(max_pokes):
                 if policy == 'marginal belief':
                     action, _ = greedy_policy_marginal_belief(b)
