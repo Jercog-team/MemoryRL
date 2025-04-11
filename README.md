@@ -72,9 +72,9 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
   $$
 
   Where:
-  - \( r \in \{0, \dots, 7\} \) is the reward port.
-  - \( \tau \in \{0, \dots, T-1\} \) is the trial in which the reward becomes available.
-  - The total number of hidden states is \( 8 \times T \).
+  - $\( r \in \{0, \dots, 7\} \)$ is the reward port.
+  - $\( \tau \in \{0, \dots, T-1\} \)$ is the trial in which the reward becomes available.
+  - The total number of hidden states is $\( 8 \times T \)$.
   - The state is static during an episode; the transition matrix is the identity.
 
 - **Actions**  
@@ -152,7 +152,7 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 
 ### Transition Model
 
-- The hidden state \( s = (r, \tau) \) is static.
+- The hidden state $\( s = (r, \tau) \)$ is static.
 - Belief transitions are deterministic given the action and outcome.
 - If a reward is received, the agent enters a terminal state and the episode ends.
 
