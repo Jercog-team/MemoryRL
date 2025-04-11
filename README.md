@@ -67,7 +67,9 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 - **States**  
   The hidden state at each episode is a tuple:
 
-  $$s = (r, \tau)$$
+$$
+s = (r, \tau)
+$$
 
   Where:
   - $\( r \in \{0, \dots, 7\} \)$ is the reward port.
@@ -78,7 +80,9 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 - **Actions**  
   At each poke within a trial, the agent selects a port to poke:
 
-  $$a_t \in \{0, \dots, 7\}$$
+$$
+a_t \in \{0, \dots, 7\}
+$$
 
 - **Observations**  
   The observation after each poke is binary:
@@ -89,29 +93,29 @@ $$
 
   Reward is received only if the poke hits the correct port *after* reward becomes available:
 
-  $$
-  P(o_t = 1 \mid a_t, r, \tau) = \mathbb{1}(a_t = r) \cdot \mathbb{1}(t \geq \tau)
-  $$
+$$
+P(o_t = 1 \mid a_t, r, \tau) = \mathbb{1}(a_t = r) \cdot \mathbb{1}(t \geq \tau)
+$$
 
 - **Beliefs**  
   The agent maintains a belief distribution over the hidden state:
 
-  $$
-  b_t(r, \tau) = P(r, \tau \mid o_{1:t}, a_{1:t})
-  $$
+$$
+b_t(r, \tau) = P(r, \tau \mid o_{1:t}, a_{1:t})
+$$
 
   The marginal belief over ports is:
 
-  $$
-  m_t(r) = \sum_{\tau} b_t(r, \tau)
-  $$
+$$
+m_t(r) = \sum_{\tau} b_t(r, \tau)
+$$
 
 - **Reward Function**  
   The agent receives a reward of 1 if water is delivered:
 
-  $$
-  r_t = o_t
-  $$
+$$
+r_t = o_t
+$$
 
   The episode terminates immediately after the first reward is received.
 
@@ -122,9 +126,9 @@ $$
 - **Marginal Belief (Greedy)**  
   Chooses the port with the highest marginal belief:
 
-  $$
-  a_t = \arg\max_r m_t(r)
-  $$
+$$
+a_t = \arg\max_r m_t(r)
+$$
 
 - **Last Visit**  
   Uses a mixture of the prior and the recency of visits to select the next action.
@@ -134,15 +138,15 @@ $$
 
   - **Termination probability**:
 
-    $$
-    T_t(p) = m_t(p) \cdot \frac{t - \text{last\_visit}(p)}{T - \text{last\_visit}(p)}
-    $$
+$$
+T_t(p) = m_t(p) \cdot \frac{t - \text{last\_visit}(p)}{T - \text{last\_visit}(p)}
+$$
 
   - **Q-value recursion**:
 
-    $$
-    Q(s, a) = T_t(p) + \gamma \cdot (1 - T_t(p)) \cdot \max_{a'} Q(s', a')
-    $$
+$$
+Q(s, a) = T_t(p) + \gamma \cdot (1 - T_t(p)) \cdot \max_{a'} Q(s', a')
+$$
 
 ---
 
