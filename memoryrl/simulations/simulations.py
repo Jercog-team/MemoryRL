@@ -2,7 +2,7 @@ import numpy as np
 import random
 import torch
 from memoryrl.pomdp.belief import initialize_belief_von_misses, initialize_belief_deltas, update_belief
-from memoryrl.pomdp.greedy_policy import greedy_policy_marginal_belief, greedy_policy_last_visit
+from pomdp.policy import greedy_policy_marginal_belief, greedy_policy_last_visit, bellman_policy
 from memoryrl.visualization.plotting import plot_histogram
 from memoryrl.agents.agents import DQNAgent
 import pickle
@@ -14,7 +14,7 @@ def simulate_POMDP(n_episodes=500,
                    kappa=0.5,
                    w_today=0.3,
                    w_yesterday=0.2,
-                   greedy_policy='marginal belief',
+                   policy='marginal belief',
                    water_availability_dist=True,
                    n_ports=8,
                    n_trials=20,
@@ -55,11 +55,16 @@ def simulate_POMDP(n_episodes=500,
             poke_sequences_sim_trial = []
             max_pokes = random.randint(1, 4)
             for _ in range(max_pokes):
-                if greedy_policy == 'marginal belief':
+                if policy == 'marginal belief':
                     action, _ = greedy_policy_marginal_belief(b)
 
-                elif greedy_policy == 'last visit':
+                elif policy == 'last visit':
                     action, _ = greedy_policy_last_visit(f_theta, last_visit, t)
+
+                elif policy == 'bellman':
+                    state = [poke - 1 for poke in poke_sequences_sim_trial]
+                    action, _ = bellman_policy(state, b, last_visit, t, n_trials=n_trials)
+
 
                 poke_sequences_sim_trial.append(action+1)
                 poke_distribution[action] += 1
@@ -93,7 +98,9 @@ def simulate_LSTM_POMDP(n_episodes=5000,
                         epsilon=0.2,
                         n_ports=8,
                         n_trials=20,
-                        belief_init='von misses'):
+                        belief_init='von misses',
+                        pretrained_agent=None):
+
     """
     Simulates a POMDP using an LSTM-based Deep Q-Network (DQN) agent.
 
@@ -110,11 +117,15 @@ def simulate_LSTM_POMDP(n_episodes=5000,
         epsilon (float): Initial epsilon value for epsilon-greedy policy.
         n_ports (int): Number of ports in the environment.
         n_trials (int): Number of trials per episode.
+        belief_init (str): Method for initializing the belief state. 
+            Options are 'von misses' or 'deltas'.
+        pretrained_agent (DQNAgent or None): Pretrained agent to use for the simulation. 
+            If None, a new agent is initialized.
 
     Returns:
         tuple: Simulated histogram, distances simulation, and poke sequences simulation.
     """
-    agent = DQNAgent(input_dim=n_ports * n_trials + n_ports + 1, action_dim=n_ports)
+    agent = pretrained_agent if pretrained_agent is not None else DQNAgent(input_dim=n_ports * n_trials + n_ports + 1, action_dim=n_ports)
 
     Big_Hist_data = []
     poke_sequences_sim = []
@@ -224,5 +235,5 @@ def simulate_LSTM_POMDP(n_episodes=5000,
     simulated_hist = plot_histogram(Big_Hist_data, arr_ports)
 
 
-    return simulated_hist, distances_sim, poke_sequences_sim
+    return simulated_hist, distances_sim, poke_sequences_sim, agent
 
