@@ -138,7 +138,7 @@ $$
 
   - **Termination probability**:
 
-  $$T_t(p) = m_t(p) \cdot \frac{t - \text{last\\_visit}(p)}{T - \text{last\\_visit}(p)}$$
+  <div align="center">$$T_t(p) = m_t(p) \cdot \frac{t - \text{last\\_visit}(p)}{T - \text{last\\_visit}(p)}$$</div>
 
   - **Q-value recursion**:
 
@@ -190,39 +190,37 @@ The project is now organized as follows:
 
 ```
 MemoryRL/
-├── main.py                # Entry point for running the simulation
-├── README.md              # Project documentation
-├── setup.py               # Packaging and installation
-├── memoryrl/              # Source code
-│   ├── __init__.py        # Makes `memoryrl` a Python package
-│   ├── agents/            # Submodule for agent implementations
-│   │   ├── __init__.py    # Makes `agents` a Python package
-│   │   └── agents.py      # Core agent logic
-│   ├── pomdp/             # Submodule for POMDP-related logic
-│   │   ├── __init__.py    # Makes `pomdp` a Python package
-│   │   ├── belief.py      # Belief state management
-│   │   └── policy.py      # Policy-related functions
-│   ├── simulations/       # Submodule for running simulations
-│   │   ├── __init__.py    # Makes `simulations` a Python package
-│   │   └── simulations.py # Simulation logic
-│   ├── utils/             # Submodule for utility functions
-│   │   ├── __init__.py    # Makes `utils` a Python package
-│   │   ├── data_processing.py # Data processing utilities
-│   │   ├── filtering_functions.py # Filtering-related utilities
-│   │   ├── HMM_EM.py      # Hidden Markov Model utilities
-│   │   └── memoryIndex_functions.py # Memory index utilities
-│   └── visualization/     # Submodule for visualization functions
-│       ├── __init__.py    # Makes `visualization` a Python package
-│       ├── animation.py   # Animation-related utilities
-│       └── plotting.py    # Plotting-related utilities
-├── img/                   # Images for documentation and visualization
-│   ├── 8port.png          # Diagram of the 8-port maze
-│   ├── Day1.png           # Example visualization for Day 1
-│   ├── Day2.png           # Example visualization for Day 2
-│   ├── Day3.png           # Example visualization for Day 3
-│   ├── Day4.png           # Example visualization for Day 4
-│   └── Day5.png           # Example visualization for Day 5
-└── __pycache__/           # Compiled Python files
+├── main.py                
+├── README.md              
+├── setup.py               
+├── memoryrl/              
+│   ├── __init__.py        
+│   ├── agents/            
+│   │   ├── __init__.py    
+│   │   └── agents.py      
+│   ├── pomdp/             
+│   │   ├── __init__.py    
+│   │   ├── belief.py      
+│   │   └── policy.py      
+│   ├── simulations/       
+│   │   ├── __init__.py    
+│   │   └── simulations.py 
+│   ├── utils/             
+│   │   ├── __init__.py    
+│   │   ├── data_processing.py 
+│   │   ├── filtering_functions.py 
+│   │   ├── HMM_EM.py      
+│   │   └── memoryIndex_functions.py 
+│   └── visualization/     
+│       ├── __init__.py    
+│       ├── animation.py   
+│       └── plotting.py    
+├── img/                   
+│   ├── 8port.png          
+│   ├── hist.png           
+│   ├── hist_dist.png           
+│   ├── trans_matrix.png
+└── __pycache__/           
 ```
 
 ## Updated Instructions
