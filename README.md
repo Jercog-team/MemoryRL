@@ -162,9 +162,9 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 
 The episode ends immediately upon receiving the first water reward:
 
-$$
+$
 o_t = 1 \Rightarrow \text{terminate}
-$$
+$
 
 
 ## Results and Visualizations
