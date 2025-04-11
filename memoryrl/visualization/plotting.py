@@ -49,7 +49,7 @@ def plot_histogram(hist_data, arr_ports):
     """
     rotated = []
     for i in range(len(hist_data)):
-        rotated_hist_seq = np.roll(hist_data[i], 3 - int(arr_ports[i]))
+        rotated_hist_seq = np.roll(hist_data[i], 4 - int(arr_ports[i]))
         rotated.append(rotated_hist_seq)
 
     hist = np.sum(rotated, axis=0)

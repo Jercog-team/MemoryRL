@@ -7,6 +7,7 @@ from memoryrl.agents.agents import DQNAgent
 import pickle
 import importlib.resources as pkg_resources
 from distributions import __name__ as dist_pkg
+import math
 
 
 def simulate_POMDP(n_episodes=500,
@@ -16,6 +17,7 @@ def simulate_POMDP(n_episodes=500,
                    policy='marginal belief',
                    water_availability_dist=True,
                    pokes_per_trial_dist=None,
+                   ports_sequences='real',
                    n_ports=8,
                    n_trials=20,
                    belief_init='von misses'):
@@ -30,6 +32,9 @@ def simulate_POMDP(n_episodes=500,
         policy (str): Policy type ('marginal belief', 'last visit' or 'bellman').
         water_availability_dist (bool): Whether to use water availability distribution.
         pokes_per_trial_dist (list): Distribution of pokes per trial.
+        ports_sequences (str): Specifies the source of the port sequences for the simulation.
+            - 'real': Use preloaded real-world port sequences from a dataset.
+            - 'random': Generate random port sequences for the simulation.
         n_ports (int): Number of ports in the environment.
         n_trials (int): Number of trials per episode.
         belief_init (str): Method for initializing the belief state. 
@@ -43,18 +48,33 @@ def simulate_POMDP(n_episodes=500,
     distances_sim = {0: [], 1: [], 2: [], 3: [], 4: []}
     poke_sequences_sim = [] # Track the sequences of pokes for each episode
 
+
+    if ports_sequences == 'real':
+        ports_seqs = np.load(pkg_resources.files(dist_pkg).joinpath('ports.npz'))
+        ceil = math.ceil(n_episodes / np.shape(ports_seqs['arr1'])[0])
+        ports = np.repeat(ports_seqs['arr1'], ceil)
+        lag_ports = np.repeat(ports_seqs['arr2'], ceil)
+
+    else:
+        ports = np.random.randint(0, n_ports, size=n_episodes)
+        lag_ports = np.random.randint(0, n_ports, size=n_episodes)
+
+
     if not pokes_per_trial_dist:
         with pkg_resources.files(dist_pkg).joinpath("pokes_per_trial_dist.pkl").open("rb") as f1:
             pokes_per_trial_dist = pickle.load(f1)
     
     for episode in range(n_episodes):
-        
+
+        r_true = ports[episode]
+        prev_r_true = lag_ports[episode]
+
         if belief_init == 'von misses':
-            b, r_true, tau_true, last_visit, prev_r_true, f_theta = initialize_belief_von_misses(kappa=kappa, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+            b, tau_true, last_visit, f_theta = initialize_belief_von_misses(r_true, prev_r_true, kappa=kappa, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
         else:   
-            b, r_true, tau_true, last_visit, prev_r_true, f_theta = initialize_belief_deltas( w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+            b, tau_true, last_visit, f_theta = initialize_belief_deltas(r_true, prev_r_true, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
         
-        dist = abs(r_true - prev_r_true) % 5
+        dist = abs(r_true - prev_r_true) % 5  # CHECK THIS
         poke_distribution = np.zeros(n_ports)
         done = False
         
@@ -99,6 +119,7 @@ def simulate_LSTM_POMDP(n_episodes=5000,
                         epsilon_min=0.1,
                         pokes_per_trial_dist=None,
                         water_availability_dist=True,
+                        ports_sequences='real',
                         kappa=3,
                         w_today=0.3,
                         w_yesterday=0.2,
@@ -118,6 +139,9 @@ def simulate_LSTM_POMDP(n_episodes=5000,
         epsilon_min (float): Minimum value for epsilon.
         pokes_per_trial_dist (list): Distribution of pokes per trial.
         water_availability_dist (bool): Whether to use water availability distribution.
+        ports_sequences (str): Specifies the source of the port sequences for the simulation.
+            - 'real': Use preloaded real-world port sequences from a dataset.
+            - 'random': Generate random port sequences for the simulation.
         kappa (float): Parameter for belief initialization.
         w_today (float): Weight for today's belief update.
         w_yesterday (float): Weight for yesterday's belief update.
@@ -139,16 +163,29 @@ def simulate_LSTM_POMDP(n_episodes=5000,
     arr_ports = []
     distances_sim = {0: [], 1: [], 2: [], 3: [], 4: []}
 
+    if ports_sequences == 'real':
+        ports_seqs = np.load(pkg_resources.files(dist_pkg).joinpath('ports.npz'))
+        ceil = math.ceil(n_episodes / np.shape(ports_seqs['arr1'])[0])
+        ports = np.repeat(ports_seqs['arr1'], ceil)
+        lag_ports = np.repeat(ports_seqs['arr2'], ceil)
+
+    else:
+        ports = np.random.randint(0, n_ports, size=n_episodes)
+        lag_ports = np.random.randint(0, n_ports, size=n_episodes)
+
     if not pokes_per_trial_dist:
         with pkg_resources.files(dist_pkg).joinpath("pokes_per_trial_dist.pkl").open("rb") as f1:
             pokes_per_trial_dist = pickle.load(f1)
     
     for episode in range(n_episodes):
 
+        r_true = ports[episode]
+        prev_r_true = lag_ports[episode]
+
         if belief_init == 'von misses':
-            b_prior, r_true, tau_true, last_visit, prev_r_true, _ = initialize_belief_von_misses(kappa=kappa, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+            b_prior, tau_true, last_visit, _ = initialize_belief_von_misses(r_true, prev_r_true, kappa=kappa, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
         else:   
-            b_prior, r_true, tau_true, last_visit, prev_r_true, _ = initialize_belief_deltas( w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
+            b_prior, tau_true, last_visit, _ = initialize_belief_deltas(r_true, prev_r_true, w_today=w_today, w_yesterday=w_yesterday, n_ports=n_ports, n_trials=n_trials, water_availability_dist=water_availability_dist)
         
         dist = abs(r_true - prev_r_true) % 5
         poke_distribution = np.zeros(n_ports)

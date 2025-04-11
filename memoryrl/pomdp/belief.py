@@ -4,7 +4,15 @@ import importlib.resources as pkg_resources
 from distributions import __name__ as dist_pkg
 
 
-def initialize_belief_von_misses(kappa=3, w_today=0.3, w_yesterday=0.2, n_ports=8, n_trials=20, water_availability_dist=True):
+def initialize_belief_von_misses(r_true_today,
+                                 r_true_yesterday,
+                                 kappa=3,
+                                 w_today=0.3,
+                                 w_yesterday=0.2,
+                                 n_ports=8,
+                                 n_trials=20,
+                                 water_availability_dist=True):
+
     """
     Initializes the belief state using a von Mises distribution.
 
@@ -23,18 +31,15 @@ def initialize_belief_von_misses(kappa=3, w_today=0.3, w_yesterday=0.2, n_ports=
 
     thetas = np.linspace(0, 2*np.pi, n_ports+1)[:-1]
     
-    r_true_today = np.random.randint(0, n_ports)
-    r_true_yesterday = np.random.randint(0, n_ports)
-
     
-    f_r_today = np.exp(kappa * np.cos(thetas - thetas[r_true_today]))
+    f_r_today = np.exp(kappa * np.cos(thetas - thetas[r_true_today-1]))
     f_r_today /= f_r_today.sum()  
     
-    f_r_yesterday = np.exp(kappa * np.cos(thetas - thetas[r_true_yesterday]))
+    f_r_yesterday = np.exp(kappa * np.cos(thetas - thetas[r_true_yesterday-1]))
     f_r_yesterday /= f_r_yesterday.sum()
 
 
-    f_r_exploration = np.exp(0.015 * np.cos(thetas - thetas[r_true_today]))
+    f_r_exploration = np.exp(0.015 * np.cos(thetas - thetas[r_true_today-1]))
     f_r_exploration /= f_r_exploration.sum()  
     
     f_r = w_today * f_r_today + w_yesterday * f_r_yesterday + 0.001 * f_r_exploration
@@ -62,11 +67,17 @@ def initialize_belief_von_misses(kappa=3, w_today=0.3, w_yesterday=0.2, n_ports=
 
     last_visit = np.zeros(n_ports, dtype=int)
     
-    return b_prior, r_true_today, tau_true, last_visit, r_true_yesterday, f_r
+    return b_prior, tau_true, last_visit, f_r
 
 
 
-def initialize_belief_deltas(w_today=0.3, w_yesterday=0.2, n_ports=8, n_trials=20, water_availability_dist=True):
+def initialize_belief_deltas(r_true_today,
+                             r_true_yesterday,
+                             w_today=0.3,
+                             w_yesterday=0.2,
+                             n_ports=8,
+                             n_trials=20,
+                             water_availability_dist=True):
     """
     Initializes the belief state using delta functions for today's and yesterday's ports.
 
@@ -82,16 +93,14 @@ def initialize_belief_deltas(w_today=0.3, w_yesterday=0.2, n_ports=8, n_trials=2
                the true trial (tau_true), last visit times (last_visit), and yesterday's true port (r_true_yesterday).
     """
 
-    r_true_today = np.random.randint(0, n_ports)
-    r_true_yesterday = np.random.randint(0, n_ports)
 
     # Initialize belief for today's correct port
     f_r_today = np.zeros(n_ports)
-    f_r_today[r_true_today] = 1.0  # Only the correct port of today has a non-zero value
+    f_r_today[r_true_today-1] = 1.0  # Only the correct port of today has a non-zero value
 
     # Initialize belief for yesterday's correct port
     f_r_yesterday = np.zeros(n_ports)
-    f_r_yesterday[r_true_yesterday] = 1.0  # Only the correct port of yesterday has a non-zero value
+    f_r_yesterday[r_true_yesterday-1] = 1.0  # Only the correct port of yesterday has a non-zero value
 
     # Combine today's and yesterday's beliefs
     f_r = w_today * f_r_today + w_yesterday * f_r_yesterday
@@ -124,7 +133,7 @@ def initialize_belief_deltas(w_today=0.3, w_yesterday=0.2, n_ports=8, n_trials=2
     # Initialize last visit times
     last_visit = np.zeros(n_ports, dtype=int)
     
-    return b_prior, r_true_today, tau_true, last_visit, r_true_yesterday, f_r
+    return b_prior, tau_true, last_visit, f_r
 
 
 
