@@ -64,7 +64,7 @@ This model aims to capture these dynamics by using a POMDP framework, where the 
 
 ## Model Implementation
 
-- **States**  
+### States  
   The hidden state at each episode is a tuple:
 
 $$
@@ -77,14 +77,14 @@ $$
   - The total number of hidden states is $\( 8 \times T \)$.
   - The state is static during an episode; the transition matrix is the identity.
 
-- **Actions**  
+### Actions
   At each poke within a trial, the agent selects a port to poke:
 
 $$
 a_t \in \{0, \dots, 7\}
 $$
 
-- **Observations**  
+### Observations
   The observation after each poke is binary:
 
 $$
@@ -97,7 +97,7 @@ $$
 P(o_t = 1 \mid a_t, r, \tau) = \mathbb{1}(a_t = r) \cdot \mathbb{1}(t \geq \tau)
 $$
 
-- **Beliefs**  
+### Beliefs  
   The agent maintains a belief distribution over the hidden state:
 
 $$
@@ -110,7 +110,7 @@ $$
 m_t(r) = \sum_{\tau} b_t(r, \tau)
 $$
 
-- **Reward Function**  
+### Reward Function
   The agent receives a reward of 1 if water is delivered:
 
 $$
@@ -138,9 +138,9 @@ $$
 
   - **Termination probability**:
 
-$$
-T_t(p) = m_t(p) \cdot \frac{t - \text{last\_visit}(p)}{T - \text{last\_visit}(p)}
-$$
+  $$
+  T_t(p) = m_t(p) \cdot \frac{t - \text{last\_visit}(p)}{T - \text{last\_visit}(p)}
+  $$
 
   - **Q-value recursion**:
 
