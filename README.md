@@ -138,9 +138,7 @@ $$
 
   - **Termination probability**:
 
-$$
-T_t(p) = m_t(p) \cdot \frac{t - \text{last\\_visit}(p)}{T - \text{last\\_visit}(p)}
-$$
+  $$T_t(p) = m_t(p) \cdot \frac{t - \text{last\\_visit}(p)}{T - \text{last\\_visit}(p)}$$
 
   - **Q-value recursion**:
 
@@ -169,35 +167,22 @@ $$
 
 ## Results and Visualizations
 
-### Day 1
+### Pokes histogram
 
-Correct Port: 4
 
-![Day 1 metrics](img/Day1.png)
+![Pokes histogram](img/hist.png)
 
-### Day 2
+### Pokes Histogram by distance between yesterday's and today's ports
 
-Correct Port: 1
 
-![Day 2 metrics](img/Day2.png)
+![Pokes Histogram by distance](img/hist_dist.png)
 
-### Day 3
+### Transition matrix between ports at the same trial
 
-Correct Port: 6
 
-![Day 3 metrics](img/Day3.png)
+![Transition matrix](img/trans_matrix.png)
 
-### Day 4
 
-Correct Port: 3
-
-![Day 4 metrics](img/Day4.png)
-
-### Day 5
-
-Correct Port: 3
-
-![Day 5 metrics](img/Day5.png)
 
 ## Updated Project Structure
 
@@ -246,7 +231,7 @@ MemoryRL/
 
    ```bash
    git clone https://<GITHUB TOKEN>:x-oauth-basic@github.com/Jercog-team/MemoryRL
-   cd memoryrl
+   cd MemoryRL
    ```
 
 2. Install Dependencies
