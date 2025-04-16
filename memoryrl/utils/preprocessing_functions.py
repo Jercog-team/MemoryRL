@@ -1029,10 +1029,10 @@ def CleaningRawDataset_TRAINING_TsA(DrugType='CONTROL', FlagforSessions='CONTROL
   return ALL_portsPoked, ALL_PORTS, ALL_PORTS_YES
 
 def CleaningRawDataset_REC_TsA(DrugType='CONTROL', FlagforSessions='CONTROL'):
-  pathData= 'C:\\Users\\User\\Documents\\cajal\\code\\data\\' #'/content/gdrive/MyDrive/Data8port/'
-  fileName1='Output_8PortMazeAnalAVerRecallAllAnimals8NBatch.mat'
-  fileName2='Output_8PortMazeAnalAVerRecallAllAnimals9NBatch.mat'
-  fileName3='Output_8PortMazeAnalAVerRecallAllAnimals11NBatch.mat'
+  pathData= 'Z:\\Raw_Data_8PortsMaze\\' #'/content/gdrive/MyDrive/Data8port/'
+  fileName1='Output_8PortMazeAnalAVerRecallAllAnimals8Batch.mat'
+  fileName2='Output_8PortMazeAnalAVerRecallAllAnimals9Batch.mat'
+  fileName3='Output_8PortMazeAnalAVerRecallAllAnimals11Batch.mat'
 
   # Load data from files
   S = [scipy.io.loadmat(pathData + fileName) for fileName in [fileName1, fileName2, fileName3]]

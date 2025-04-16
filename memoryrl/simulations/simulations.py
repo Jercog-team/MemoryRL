@@ -21,6 +21,7 @@ def simulate_POMDP(n_episodes=500,
                    n_ports=8,
                    n_trials=20,
                    belief_init='von misses'):
+
     """
     Simulates a Partially Observable Markov Decision Process (POMDP) using a greedy policy.
 
@@ -110,7 +111,7 @@ def simulate_POMDP(n_episodes=500,
     simulated_hist = plot_histogram(Big_Hist_data, arr_ports)
 
     
-    return simulated_hist, distances_sim, poke_sequences_sim
+    return simulated_hist, distances_sim, poke_sequences_sim, Big_Hist_data
 
 
 def simulate_LSTM_POMDP(n_episodes=5000,
@@ -209,8 +210,8 @@ def simulate_LSTM_POMDP(n_episodes=5000,
                     action, hidden = agent.select_action(torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0), hidden,last_action, trial_first_poke,  epsilon)
                     trial_first_poke = False  # Next pokes within trial follow distance bias
                     last_action = action  # Update last action for next step
-                    poke_sequences_sim_trial.append(action+1)
-                    poke_distribution[action] += 1
+                    poke_sequences_sim_trial.append(action)
+                    poke_distribution[action-1] += 1
                     w = int((action == r_true) and (t + 1 >= tau_true))
                     b_prior, term_prob, last_visit = update_belief(b_prior, w, action, t, last_visit)
                     agent.store_experience((torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0), action, w, torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0), int(t + 1 >= tau_true), hidden))
@@ -253,8 +254,8 @@ def simulate_LSTM_POMDP(n_episodes=5000,
                     action, hidden = agent.select_action(torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0), hidden,last_action, trial_first_poke,  epsilon)
                     trial_first_poke = False  # Next pokes within trial follow distance bias
                     last_action = action  # Update last action for next step
-                    poke_sequences_sim_trial.append(action+1)
-                    poke_distribution[action] += 1
+                    poke_sequences_sim_trial.append(action)
+                    poke_distribution[action-1] += 1
                     w = int((action == r_true) and (t + 1 >= tau_true))
                     b_prior, term_prob, last_visit = update_belief(b_prior, w, action, t, last_visit)
                     agent.store_experience((torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0), action, w, torch.tensor(state_vector, dtype=torch.float32).unsqueeze(0), int(t + 1 >= tau_true), hidden))
@@ -270,7 +271,7 @@ def simulate_LSTM_POMDP(n_episodes=5000,
 
         
         Big_Hist_data.append(poke_distribution)
-        distances_sim[dist].append(np.roll(poke_distribution, 3 - r_true))
+        distances_sim[dist].append(np.roll(poke_distribution, 4 - r_true))
         arr_ports.append(r_true)
         
         agent.update_target()
@@ -279,5 +280,5 @@ def simulate_LSTM_POMDP(n_episodes=5000,
     simulated_hist = plot_histogram(Big_Hist_data, arr_ports)
 
 
-    return simulated_hist, distances_sim, poke_sequences_sim, agent
+    return simulated_hist, distances_sim, poke_sequences_sim, agent, Big_Hist_data
 
