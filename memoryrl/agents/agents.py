@@ -135,7 +135,8 @@ class DQNAgent:
         device = next(self.policy_net.parameters()).device
         if random.random() < epsilon:
             action = random.randint(0, num_ports - 1)
-            return action, hidden
+            zero = torch.zeros(1, num_ports).to(device)
+            return action, hidden, zero, zero, zero
 
         with torch.no_grad():
             q_values, hidden = self.policy_net(state, hidden)
@@ -143,6 +144,9 @@ class DQNAgent:
             if trial_first_poke:
                 # No penalties for first poke
                 action = torch.argmax(q_values).item()
+                probs = torch.zeros_like(q_values).to(device)
+                penalty_mask = torch.zeros_like(q_values).to(device)
+
             else:
                 distances = torch.tensor([
                     min(abs(a - last_action), num_ports - abs(a - last_action)) 
@@ -153,14 +157,14 @@ class DQNAgent:
                 weighted_q_values = q_values * distance_weights
 
                 # Apply a penalty to the previously poked port
-                penalty_mask = torch.zeros_like(q_values)
+                penalty_mask = torch.zeros_like(q_values).to(device)
                 penalty_mask[0, last_action] = -repeat_penalty
 
                 final_q_values = weighted_q_values + penalty_mask
                 probs = torch.softmax(final_q_values / 0.5, dim=-1)
                 action = torch.multinomial(probs, 1).item()
 
-            return action, hidden
+            return action, hidden, q_values, probs, penalty_mask
         
 
     def store_experience(self, experience):

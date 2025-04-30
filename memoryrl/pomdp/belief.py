@@ -6,7 +6,8 @@ from distributions import __name__ as dist_pkg
 
 def initialize_belief_von_misses(r_true_today,
                                  r_true_yesterday,
-                                 kappa=3,
+                                 kappa_today=3,
+                                 kappa_yesterday=3,
                                  w_today=0.3,
                                  w_yesterday=0.2,
                                  n_ports=8,
@@ -32,10 +33,10 @@ def initialize_belief_von_misses(r_true_today,
     thetas = np.linspace(0, 2*np.pi, n_ports+1)[:-1]
     
     
-    f_r_today = np.exp(kappa * np.cos(thetas - thetas[r_true_today-1]))
+    f_r_today = np.exp(kappa_today * np.cos(thetas - thetas[r_true_today-1]))
     f_r_today /= f_r_today.sum()  
     
-    f_r_yesterday = np.exp(kappa * np.cos(thetas - thetas[r_true_yesterday-1]))
+    f_r_yesterday = np.exp(kappa_yesterday * np.cos(thetas - thetas[r_true_yesterday-1]))
     f_r_yesterday /= f_r_yesterday.sum()
 
 
@@ -49,8 +50,10 @@ def initialize_belief_von_misses(r_true_today,
         with pkg_resources.files(dist_pkg).joinpath("water_aval_dist.pkl").open("rb") as f1:
             water_availability_dist = pickle.load(f1)
         
+        water_availability_dist = np.histogram(water_availability_dist, bins=np.arange(n_trials + 1), density=True)[0][:7]
+
         # Adjust the distribution to match n_trials
-        if len(water_availability_dist) != n_trials:
+        if len(np.unique(water_availability_dist)) != n_trials:
             x_original = np.linspace(0, 1, len(water_availability_dist))
             x_target = np.linspace(0, 1, n_trials)
             water_availability_dist = np.interp(x_target, x_original, water_availability_dist)
@@ -112,8 +115,10 @@ def initialize_belief_deltas(r_true_today,
         with pkg_resources.files(dist_pkg).joinpath("water_aval_dist.pkl").open("rb") as f1:
             water_availability_dist = pickle.load(f1)
         
+        water_availability_dist = np.histogram(water_availability_dist, bins=np.arange(n_trials + 1), density=True)[0][:7]
+
         # Adjust the distribution to match n_trials
-        if len(water_availability_dist) != n_trials:
+        if len(np.unique(water_availability_dist)) != n_trials:
             x_original = np.linspace(0, 1, len(water_availability_dist))
             x_target = np.linspace(0, 1, n_trials)
             water_availability_dist = np.interp(x_target, x_original, water_availability_dist)
@@ -134,6 +139,59 @@ def initialize_belief_deltas(r_true_today,
     last_visit = np.zeros(n_ports, dtype=int)
     
     return b_prior, tau_true, last_visit, f_r
+
+
+
+def initialize_belief_uniform(n_ports=8,
+                              n_trials=20,
+                              water_availability_dist=True):
+    """
+    Initializes the belief state using a uniform distribution over ports.
+
+    Args:
+        n_ports (int): Number of ports.
+        n_trials (int): Number of trials.
+        water_availability_dist (bool): Whether to use a water availability distribution.
+
+
+    Returns:
+        tuple: A tuple containing the prior belief state (b_prior), 
+               the true trial (tau_true), last visit times (last_visit), 
+               and the marginal port belief (f_r).
+    """
+
+    # Uniform distribution over reward ports
+    f_r = np.ones(n_ports) / n_ports
+
+    # Trial belief: either uniform or based on a pre-saved distribution
+    if water_availability_dist:
+        with pkg_resources.files(dist_pkg).joinpath("water_aval_dist.pkl").open("rb") as f1:
+            water_availability_dist = pickle.load(f1)
+
+        # Convert raw data to a histogram-based probability distribution
+        water_availability_dist = np.histogram(water_availability_dist, bins=np.arange(n_trials + 1), density=True)[0][:7]
+
+        # Interpolate if necessary to match trial count
+        if len(np.unique(water_availability_dist)) != n_trials:
+            x_original = np.linspace(0, 1, len(water_availability_dist))
+            x_target = np.linspace(0, 1, n_trials)
+            water_availability_dist = np.interp(x_target, x_original, water_availability_dist)
+
+        water_availability_dist /= np.sum(water_availability_dist)
+        tau_true = np.random.choice(np.arange(1, n_trials + 1), p=water_availability_dist)
+        g_tau = water_availability_dist
+    else:
+        tau_true = np.random.randint(1, n_trials + 1)
+        g_tau = np.ones(n_trials) / n_trials
+
+    # Compute the prior belief matrix as outer product of f_r and g_tau
+    b_prior = np.outer(f_r, g_tau)
+
+    # Initialize last visit vector
+    last_visit = np.zeros(n_ports, dtype=int)
+
+    return b_prior, tau_true, last_visit, f_r
+
 
 
 
