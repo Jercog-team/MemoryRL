@@ -1,5 +1,11 @@
 import numpy as np
+from pathlib import Path
 import scipy.io
+
+def circular_distance(angle1, angle2):
+  angle_difference = np.abs(angle2 - angle1)
+  wrapped_angle_difference = np.minimum(angle_difference, 2 * np.pi - angle_difference)
+  return wrapped_angle_difference
 
 
 def CleaningRawDataset_trn(pathData,fileNames,DrugType='CONTROL', FlagforSessions='CONTROL'):
@@ -1029,13 +1035,17 @@ def CleaningRawDataset_TRAINING_TsA(DrugType='CONTROL', FlagforSessions='CONTROL
   return ALL_portsPoked, ALL_PORTS, ALL_PORTS_YES
 
 def CleaningRawDataset_REC_TsA(DrugType='CONTROL', FlagforSessions='CONTROL'):
-  pathData= 'Z:\\Raw_Data_8PortsMaze\\' #'/content/gdrive/MyDrive/Data8port/'
+  path1 = Path(r'Z:\Raw_Data_8PortsMaze')
+  path2 = Path(r'C:\Users\User\Documents\cajal\code\data')
+    
+    # Select the first path that exists
+  pathData = path1 if path1.exists() else path2
   fileName1='Output_8PortMazeAnalAVerRecallAllAnimals8Batch.mat'
   fileName2='Output_8PortMazeAnalAVerRecallAllAnimals9Batch.mat'
   fileName3='Output_8PortMazeAnalAVerRecallAllAnimals11Batch.mat'
 
   # Load data from files
-  S = [scipy.io.loadmat(pathData + fileName) for fileName in [fileName1, fileName2, fileName3]]
+  S = [scipy.io.loadmat(pathData / fileName) for fileName in [fileName1, fileName2, fileName3]]
   AngRad_dict = {1: np.pi/4, 2: 0, 3: -np.pi/4, 4: -np.pi/2, 5: -3*np.pi/4, 6: np.pi, 7: 3*np.pi/4, 8: np.pi/2}
 
   # Parameters

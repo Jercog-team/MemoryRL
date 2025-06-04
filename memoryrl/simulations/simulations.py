@@ -3,6 +3,7 @@ import torch
 from memoryrl.pomdp.belief import initialize_belief_von_misses, initialize_belief_deltas, initialize_belief_uniform, update_belief
 from pomdp.policy import greedy_policy_marginal_belief, greedy_policy_last_visit, bellman_policy
 from memoryrl.visualization.plotting import plot_histogram
+from memoryrl.utils.preprocessing_functions import circular_distance
 from memoryrl.agents.agents import DQNAgent
 import pickle
 import importlib.resources as pkg_resources
@@ -46,6 +47,8 @@ def simulate_POMDP(n_episodes=500,
     Returns:
         tuple: Simulated histogram, distances simulation, and poke sequences simulation.
     """
+
+    new_AngRad = {1: -3*np.pi/4, 2: -np.pi/2, 3: -np.pi/4, 4: 0, 5: np.pi/4, 6: np.pi/2, 7: 3*np.pi/4, 8: np.pi}
     arr_ports = []  # Track the correct ports for each episode
     Big_Hist_data = []  # Track the poke distributions for each episode
     distances_sim = {0: [], 1: [], 2: [], 3: [], 4: []}
@@ -69,6 +72,10 @@ def simulate_POMDP(n_episodes=500,
         ports = ports_sequences[0]
         lag_ports = ports_sequences[1]
 
+    port_seq_rad=np.vectorize(new_AngRad.get)(np.array(ports))
+    lags_port_seq_rad =np.vectorize(new_AngRad.get)(np.array(lag_ports))
+
+    distances = circular_distance(port_seq_rad,lags_port_seq_rad)*8/(2*np.pi)
 
 
     if not pokes_per_trial_dist:
@@ -87,7 +94,7 @@ def simulate_POMDP(n_episodes=500,
         elif belief_init == 'uniform':
             b, tau_true, last_visit, f_theta = initialize_belief_uniform( water_availability_dist=water_availability_dist)
         
-        dist = abs(r_true - prev_r_true) % 5  # CHECK THIS
+        dist = distances[episode]  # CHECK THIS
         poke_distribution = np.zeros(n_ports)
         done = False
         
@@ -222,6 +229,7 @@ def simulate_LSTM_POMDP(n_episodes=5000,
     """
     agent = pretrained_agent if pretrained_agent is not None else DQNAgent(input_dim=n_ports * n_trials + n_ports + 1, action_dim=n_ports)
 
+    new_AngRad = {1: -3*np.pi/4, 2: -np.pi/2, 3: -np.pi/4, 4: 0, 5: np.pi/4, 6: np.pi/2, 7: 3*np.pi/4, 8: np.pi}
     Big_Hist_data = []
     poke_sequences_sim = []
     arr_ports = []
@@ -244,6 +252,11 @@ def simulate_LSTM_POMDP(n_episodes=5000,
         ports = ports_sequences[0]
         lag_ports = ports_sequences[1]
 
+    port_seq_rad=np.vectorize(new_AngRad.get)(np.array(ports))
+    lags_port_seq_rad =np.vectorize(new_AngRad.get)(np.array(lag_ports))
+
+    distances = circular_distance(port_seq_rad,lags_port_seq_rad)*8/(2*np.pi)
+
 
     if not pokes_per_trial_dist:
         with pkg_resources.files(dist_pkg).joinpath("pokes_per_trial_dist.pkl").open("rb") as f1:
@@ -261,7 +274,7 @@ def simulate_LSTM_POMDP(n_episodes=5000,
         elif belief_init == 'uniform':
             b_prior, tau_true, last_visit, _ = initialize_belief_uniform( water_availability_dist=water_availability_dist)
         
-        dist = abs(r_true - prev_r_true) % 5
+        dist = distances[episode]
         poke_distribution = np.zeros(n_ports)
         done = False
 
@@ -311,6 +324,7 @@ def simulate_LSTM_POMDP(n_episodes=5000,
         else:
 
             t = 1
+            t_now = t
             while True:
                 poke_sequences_sim_trial = []
                 max_pokes = np.random.choice(pokes_per_trial_dist)
