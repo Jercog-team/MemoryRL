@@ -1040,6 +1040,8 @@ def CleaningRawDataset_REC_TsA(DrugType='CONTROL', FlagforSessions='CONTROL'):
     
     # Select the first path that exists
   pathData = path1 if path1.exists() else path2
+  if not path1.exists():
+    print(f"Path {path1} does not exist, using {path2} instead.")
   fileName1='Output_8PortMazeAnalAVerRecallAllAnimals8Batch.mat'
   fileName2='Output_8PortMazeAnalAVerRecallAllAnimals9Batch.mat'
   fileName3='Output_8PortMazeAnalAVerRecallAllAnimals11Batch.mat'

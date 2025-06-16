@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from memoryrl.pomdp.belief import initialize_belief_von_misses, initialize_belief_deltas, initialize_belief_uniform, update_belief
-from pomdp.policy import greedy_policy_marginal_belief, greedy_policy_last_visit, bellman_policy
+from memoryrl.pomdp.policy import greedy_policy_marginal_belief, greedy_policy_last_visit, bellman_policy
 from memoryrl.visualization.plotting import plot_histogram
 from memoryrl.utils.preprocessing_functions import circular_distance
 from memoryrl.agents.agents import DQNAgent
