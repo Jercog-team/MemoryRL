@@ -943,4 +943,33 @@ def dataset_MI_avg_ang_poke(
     )
 
 
+def water_availability(datas):
+    """
+    Given a nested 'water availability' structure, return the index of the
+    first trial where water==1 (for the first session), or last index if none.
+
+    This matches your original logic exactly.
+
+    Parameters
+    ----------
+    datas : array-like
+        Typically a nested list/array of 0/1 per trial, per session.
+
+    Returns
+    -------
+    first_idx : int
+        Index of first occurrence of 1 in the *first* row. If no 1 is found,
+        returns len(sub_list) - 1. If list is empty, returns raises IndexError.
+    """
+    new_list = np.array([[array.item() for array in inner_list] for inner_list in datas])
+
+    first_occurrences = [
+        (sub_list.tolist().index(1) if 1 in sub_list.tolist() else len(sub_list) - 1)
+        if len(sub_list) > 0 else None
+        for sub_list in new_list
+    ]
+    first_occurrences_ = np.array([[] if value is None else [value] for value in first_occurrences])
+    return first_occurrences_[0][0]
+
+
 
