@@ -156,3 +156,41 @@ def circular_distance(angle1: np.ndarray | float,
     angle_difference = np.abs(np.array(angle2) - np.array(angle1))
     wrapped_angle_difference = np.minimum(angle_difference, 2 * np.pi - angle_difference)
     return wrapped_angle_difference
+
+
+def rad_avg_poked(hist):
+    """
+    Compute the circular mean angle of poked ports per row.
+
+    Parameters
+    ----------
+    hist : array-like, shape (n_sessions, n_trials, 8) or similar
+        Histogram-style data: for each session and trial, counts of pokes per port.
+
+    Returns
+    -------
+    avg_ang_sess : list[float]
+        List of circular means (in radians) for each trial that has at least one poke.
+        Sessions are concatenated one after another.
+    """
+    # If you really want the remapped angles:
+    new_AngRad = {
+        1: -3*np.pi/4, 2: -np.pi/2, 3: -np.pi/4, 4: 0,
+        5:  np.pi/4,   6:  np.pi/2, 7: 3*np.pi/4, 8: np.pi,
+    }
+
+    avg_ang_sess = []
+    hist = np.asarray(hist, dtype=float)
+
+    for sess in range(len(hist)):
+        for row in hist[sess]:
+            positions = np.where(row != 0)[0]  # columns / ports with at least one poke
+            if positions.size > 0:
+                mapped_values = [new_AngRad.get(pos + 1, np.nan) for pos in positions]
+                mapped_values = np.array(mapped_values, dtype=float)
+                # circular mean on the unit circle
+                avg_angle = np.angle(np.exp(1j * mapped_values).mean())
+                avg_ang_sess.append(avg_angle)
+
+    return avg_ang_sess
+
