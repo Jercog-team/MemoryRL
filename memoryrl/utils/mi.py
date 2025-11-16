@@ -193,4 +193,167 @@ def ci_from_surrogates(surr, upper=99, lower=1):
     return {"low": low, "high": high, "mean": mean}
 
 
+import random
+import numpy as np
+from utils.constants import ANG_RAD_DICT
+from utils.angles import circular_distance
+from utils.mi import MemoryIndexbyTrl  # if MemoryIndexbyTrl lives here
+
+
+def distance_surrogates(Big_Hist_data, port_seq, lag_port_seq, distance_seq, mode, Nshuffles):
+    """
+    Build surrogate distributions of MI as a function of port distance.
+
+    Modes:
+    - 'Distance': shuffle the distance labels.
+    - 'Shuffle' : shuffle ports or lag ports globally, recompute distances.
+    - 'Group'   : shuffle ports / lag ports *within each distance group*.
+
+    Returns
+    -------
+    MI_Surr2h_dist, MI_Surr24h_dist : ndarray
+        Surrogate MI distributions for 2h (today) and 24h (yesterday).
+        Shapes depend on mode, matching your original implementation.
+    """
+    port_seq = np.asarray(port_seq)
+    lag_port_seq = np.asarray(lag_port_seq)
+    distance_seq = np.asarray(distance_seq)
+    Big_Hist_data = np.asarray(Big_Hist_data)
+
+    port_seq_rad = np.vectorize(ANG_RAD_DICT.get)(port_seq)
+    yes_port_seq_rad = np.vectorize(ANG_RAD_DICT.get)(lag_port_seq)
+
+    # ---- Mode: Distance ----
+    if mode == "Distance":
+        MI_Surr2h_dist = np.full((Nshuffles, 5), np.nan)
+        MI_Surr24h_dist = np.full((Nshuffles, 5), np.nan)
+
+        for i in range(Nshuffles):
+            dist_shuffled = distance_seq.copy()
+            random.shuffle(dist_shuffled)
+
+            MI_Surr2h = np.full(5, np.nan)
+            MI_Surr24h = np.full(5, np.nan)
+
+            for distance in range(5):
+                mask = (dist_shuffled == distance)
+                if not np.any(mask):
+                    continue
+                hist_block = Big_Hist_data[mask]
+                ports_block = port_seq[mask]
+                lag_block = lag_port_seq[mask]
+
+                hist_aligned = [
+                    np.roll(hist_block[ss], 8 - int(ports_block[ss]), axis=0)
+                    for ss in range(len(hist_block))
+                ]
+                hist_lag_aligned = [
+                    np.roll(hist_block[ss], 8 - int(lag_block[ss]), axis=0)
+                    for ss in range(len(hist_block))
+                ]
+
+                hist_aligned = np.sum(hist_aligned, axis=0)
+                hist_lag_aligned = np.sum(hist_lag_aligned, axis=0)
+
+                MI_Surr2h[distance] = MemoryIndexbyTrl(hist_aligned, 8)
+                MI_Surr24h[distance] = MemoryIndexbyTrl(hist_lag_aligned, 8)
+
+            MI_Surr2h_dist[i] = MI_Surr2h
+            MI_Surr24h_dist[i] = MI_Surr24h
+
+        return MI_Surr2h_dist, MI_Surr24h_dist
+
+    # ---- Mode: Shuffle (global shuffle of ports or lag ports) ----
+    if mode == "Shuffle":
+        MI_Surr2h_dist = np.full((Nshuffles, 5), np.nan)
+        MI_Surr24h_dist = np.full((Nshuffles, 5), np.nan)
+
+        # First loop: shuffle port_seq
+        for i in range(Nshuffles):
+            shuffled_seq = port_seq.copy()
+            random.shuffle(shuffled_seq)
+            new_port_seq_rad = np.vectorize(ANG_RAD_DICT.get)(shuffled_seq)
+            Distance_seq = circular_distance(new_port_seq_rad, yes_port_seq_rad) * 8 / (2 * np.pi)
+
+            MI_Surr2h = np.full(5, np.nan)
+            for distance in range(5):
+                mask = (Distance_seq == distance)
+                if not np.any(mask):
+                    continue
+                hist_block = Big_Hist_data[mask]
+                ports_block = shuffled_seq[mask]
+                hist_aligned = [
+                    np.roll(hist_block[ss], 8 - int(ports_block[ss]), axis=0)
+                    for ss in range(len(hist_block))
+                ]
+                hist_aligned = np.sum(hist_aligned, axis=0)
+                MI_Surr2h[distance] = MemoryIndexbyTrl(hist_aligned, 8)
+            MI_Surr2h_dist[i] = MI_Surr2h
+
+        # Second loop: shuffle lag_port_seq
+        for i in range(Nshuffles):
+            shuffled_seq = lag_port_seq.copy()
+            random.shuffle(shuffled_seq)
+            new_yes_port_seq_rad = np.vectorize(ANG_RAD_DICT.get)(shuffled_seq)
+            Distance_seq = circular_distance(port_seq_rad, new_yes_port_seq_rad) * 8 / (2 * np.pi)
+
+            MI_Surr24h = np.full(5, np.nan)
+            for distance in range(5):
+                mask = (Distance_seq == distance)
+                if not np.any(mask):
+                    continue
+                hist_block = Big_Hist_data[mask]
+                ports_block = shuffled_seq[mask]
+                hist_lag_aligned = [
+                    np.roll(hist_block[ss], 8 - int(ports_block[ss]), axis=0)
+                    for ss in range(len(hist_block))
+                ]
+                hist_lag_aligned = np.sum(hist_lag_aligned, axis=0)
+                MI_Surr24h[distance] = MemoryIndexbyTrl(hist_lag_aligned, 8)
+            MI_Surr24h_dist[i] = MI_Surr24h
+
+        return MI_Surr2h_dist, MI_Surr24h_dist
+
+    # ---- Mode: Group (shuffle within each distance) ----
+    if mode == "Group":
+        MI_Surr2h_dist = np.full((5, Nshuffles), np.nan)
+        MI_Surr24h_dist = np.full((5, Nshuffles), np.nan)
+
+        for distance in range(5):
+            mask = (distance_seq == distance)
+            if not np.any(mask):
+                continue
+
+            for lag_flag in range(2):
+                if lag_flag == 0:
+                    new_port_seq = port_seq[mask].copy()
+                    MI_Surr2h = np.full(Nshuffles, np.nan)
+                    for i in range(Nshuffles):
+                        random.shuffle(new_port_seq)
+                        hist_block = Big_Hist_data[mask]
+                        hist_aligned = [
+                            np.roll(hist_block[ss], 8 - int(new_port_seq[ss]), axis=0)
+                            for ss in range(len(hist_block))
+                        ]
+                        hist_aligned = np.sum(hist_aligned, axis=0)
+                        MI_Surr2h[i] = MemoryIndexbyTrl(hist_aligned, 8)
+                    MI_Surr2h_dist[distance] = MI_Surr2h
+
+                else:
+                    new_yes_port_seq = lag_port_seq[mask].copy()
+                    MI_Surr24h = np.full(Nshuffles, np.nan)
+                    for i in range(Nshuffles):
+                        random.shuffle(new_yes_port_seq)
+                        hist_block = Big_Hist_data[mask]
+                        hist_lag_aligned = [
+                            np.roll(hist_block[ss], 8 - int(new_yes_port_seq[ss]), axis=0)
+                            for ss in range(len(hist_block))
+                        ]
+                        hist_lag_aligned = np.sum(hist_lag_aligned, axis=0)
+                        MI_Surr24h[i] = MemoryIndexbyTrl(hist_lag_aligned, 8)
+                    MI_Surr24h_dist[distance] = MI_Surr24h
+
+        return MI_Surr2h_dist.T, MI_Surr24h_dist.T
+
+    raise ValueError("mode must be 'Distance', 'Shuffle', or 'Group'")
 
