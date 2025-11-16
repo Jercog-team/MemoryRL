@@ -380,3 +380,99 @@ def plot_session_trajectory_with_ports(
 
     return fig, ax
 
+
+def plot_data_based_MI(MI, MILags, MI_Surr2h_dist, MI_Surr24h_dist, colors):
+    """
+    Plot model-free (data-based) 2h and 24h memory index with surrogate CIs.
+    """
+    CI_MI2h_Surr = np.percentile(MI_Surr2h_dist, [99, 1], axis=0)
+    CI_MI_SurrLags = np.percentile(MI_Surr24h_dist, [99, 1], axis=0)
+
+    x_plot = np.arange(5)
+    fig, axs = plt.subplots(1, 1, figsize=np.array([6.4, 6.4]) * 0.7)
+
+    # 2h
+    axs.scatter([x_plot[0]], [MI[0]], color=colors[0], alpha=0.4, s=7, zorder=3)
+    axs.plot(x_plot[:2], MI[:2], "--", alpha=0.5, color=colors[0])
+    axs.plot(x_plot[1:], MI[1:], ".-", alpha=0.5, color=colors[0], label="2h MI")
+
+    # 24h
+    axs.scatter([x_plot[0]], [MILags[0]], color=colors[1], alpha=0.4, s=7, zorder=3)
+    axs.plot(x_plot[:2], MILags[:2], "--", alpha=0.5, color=colors[1])
+    axs.plot(x_plot[1:], MILags[1:], ".-", alpha=0.5, color=colors[1], label="24h MI")
+
+    # Surrogate bands
+    axs.fill_between(x_plot, CI_MI2h_Surr[0], CI_MI2h_Surr[1], color=colors[0], alpha=0.05)
+    axs.plot(x_plot, np.nanmean(CI_MI2h_Surr, axis=0), "--", color=colors[0], alpha=0.1)
+    axs.fill_between(x_plot, CI_MI_SurrLags[0], CI_MI_SurrLags[1], color=colors[1], alpha=0.05)
+    axs.plot(x_plot, np.nanmean(CI_MI_SurrLags, axis=0), "--", color=colors[1], alpha=0.1)
+
+    axs.axhline(y=0, color="grey", alpha=0.2)
+    axs.spines[["top", "right"]].set_visible(False)
+    axs.set_ylabel("Memory Index")
+    axs.set_xlabel("Distance to Yesterday Port")
+    axs.set_title("Model-free Memory Index – Real Data")
+    axs.set_ylim(-0.2, 0.4)
+    axs.legend(loc="upper right", bbox_to_anchor=(1.3, 1), fontsize=8)
+    return fig, axs
+
+
+# Backwards compat
+figure_data_based_MI = plot_data_based_MI
+
+
+def plot_model_based_MI(
+    models, port_seq, lag_port_seq, distance_seq,
+    MI_Surr2h_dist, MI_Surr24h_dist,
+    colors, Transitions, SurrogateMode, DrugType,
+    save=False, save_dir=r"D:\AutoSynaptopatiesData\Figures\HMM"
+):
+    """
+    Plot model-based memory index (from HMM) + surrogate CIs.
+    """
+    from pathlib import Path
+
+    MI_m, MILags_m = model_based_MI(models, port_seq, lag_port_seq, distance_seq)[:2]
+    Kappas = [np.exp(models[distance]["model"].observations.log_kappas) for distance in range(5)]
+    kappas = Kappas[0][1]
+
+    CI_MI2h_Surr = np.percentile(MI_Surr2h_dist, [99, 1], axis=0)
+    CI_MI_SurrLags = np.percentile(MI_Surr24h_dist, [99, 1], axis=0)
+
+    x_plot = np.arange(5)
+    fig, axs = plt.subplots(1, 1, figsize=np.array([6.4, 6.4]) * 0.7)
+
+    # 2h
+    axs.scatter([x_plot[0]], [MI_m[0]], color=colors[0], alpha=0.4, s=7, zorder=3)
+    axs.plot(x_plot[:2], MI_m[:2], "--", alpha=0.5, color=colors[0])
+    axs.plot(x_plot[1:], MI_m[1:], ".-", alpha=0.5, color=colors[0], label="Model Pred. 2h MI")
+
+    # 24h
+    axs.scatter([x_plot[0]], [MILags_m[0]], color=colors[1], alpha=0.4, s=7, zorder=3)
+    axs.plot(x_plot[:2], MILags_m[:2], "--", alpha=0.5, color=colors[1])
+    axs.plot(x_plot[1:], MILags_m[1:], ".-", alpha=0.5, color=colors[1], label="Model Pred. 24h MI")
+
+    # Surrogate bands
+    axs.fill_between(x_plot, CI_MI2h_Surr[0], CI_MI2h_Surr[1], color=colors[0], alpha=0.05)
+    axs.plot(x_plot, np.nanmean(CI_MI2h_Surr, axis=0), "--", color=colors[0], alpha=0.1)
+    axs.fill_between(x_plot, CI_MI_SurrLags[0], CI_MI_SurrLags[1], color=colors[1], alpha=0.05)
+    axs.plot(x_plot, np.nanmean(CI_MI_SurrLags, axis=0), "--", color=colors[1], alpha=0.1)
+
+    axs.axhline(y=0, color="grey", alpha=0.2)
+    axs.spines[["top", "right"]].set_visible(False)
+    axs.set_ylabel("Memory Index")
+    axs.set_xlabel("Distance to Yesterday Port")
+    axs.set_title(f"Model-based Memory Index ({Transitions})\nκ={np.round(kappas[0])}")
+    axs.set_ylim(-0.2, 0.4)
+    axs.legend(loc="upper right", bbox_to_anchor=(1.3, 1), fontsize=8)
+
+    if save:
+        save_dir = Path(save_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        fname = save_dir / f"Model_Based_MI_{DrugType}_{SurrogateMode}_{Transitions}.png"
+        plt.savefig(fname, dpi=300, bbox_inches="tight")
+
+    return fig, axs
+
+
+figure_model_based_MI = plot_model_based_MI  # alias
