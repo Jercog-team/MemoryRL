@@ -92,3 +92,56 @@ def initialize_belief(
     belief = np.copy(P_r_tau)
 
     return belief, f_theta, r_true
+
+
+def update_belief(
+    prior_ports,
+    last_visit_trials,
+    trial_index,
+    reward=None,
+):
+    """
+    Heuristic belief update over ports that is EXACTLY equivalent to your
+    current code:
+
+        raw(r)  = f_0(r) * age_t(r)
+        age_t(r) = max(t - T_r, 1)
+        f_t(r)  = raw(r) / sum_r raw(r)
+
+    This is the 'pure' belief version of what you now implement implicitly
+    inside T_t_all.
+
+    Parameters
+    ----------
+    prior_ports : ndarray, shape (n_ports,)
+        Static prior over ports f_0(r) from initialize_belief (your f_theta).
+        IMPORTANT: this is NOT updated over time; we always use f_0.
+    last_visit_trials : ndarray, shape (n_ports,)
+        Last trial index each port was visited (T_r); -1 if never.
+    trial_index : int
+        Current trial index t (0-based).
+    reward : int or None
+        Currently not used in this heuristic update (kept for future extensions
+        where you might want reward-dependent updates).
+
+    Returns
+    -------
+    belief_ports_t : ndarray, shape (n_ports,)
+        Effective belief over ports at trial t, f_t(r).
+    """
+    prior_ports = np.asarray(prior_ports, dtype=float)
+    last_visit_trials = np.asarray(last_visit_trials, dtype=int)
+
+    # age_t(r) = max(t - T_r, 1)
+    age = (trial_index - last_visit_trials).astype(float)
+    age[age < 0] = 1.0  # never visited → age 1
+
+    raw = prior_ports * age
+    denom = raw.sum()
+    if denom <= 0:
+        belief_ports_t = np.ones_like(raw) / len(raw)
+    else:
+        belief_ports_t = raw / denom
+
+    return belief_ports_t
+
