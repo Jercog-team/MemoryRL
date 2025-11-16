@@ -1,6 +1,10 @@
+# constants.py
 import numpy as np
 
-# Mapping of port numbers (1–8) to angles in radians
+# Number of ports
+N_PORTS: int = 8
+
+# Mapping from port index (1..8) to angle in radians on the circle
 ANG_RAD_DICT = {
     1: np.pi / 4,
     2: 0,
@@ -12,5 +16,5 @@ ANG_RAD_DICT = {
     8: np.pi / 2,
 }
 
-# Optional: convenient vectorized version for arrays
-vec_port_to_angle = np.vectorize(ANG_RAD_DICT.get)
+# Handy list of ports in the canonical order
+PORTS_ORDER = list(ANG_RAD_DICT.keys())
