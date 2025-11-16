@@ -972,4 +972,104 @@ def water_availability(datas):
     return first_occurrences_[0][0]
 
 
+def subsample_data(arr_pokes, distance_seq, port_seq, lag_port_seq, NSamples=None, fraction=0.8):
+    """
+    Subsample a coherent subset of trials, keeping all variables aligned.
+
+    Parameters
+    ----------
+    arr_pokes : ndarray
+        Trial-wise poke data (any shape as long as first dimension = n_trials).
+    distance_seq : ndarray
+        Distance bin per trial.
+    port_seq : ndarray
+        Current port per trial.
+    lag_port_seq : ndarray
+        Lagged port per trial.
+    NSamples : int or None
+        If fraction is False, use NSamples as exact number of samples.
+    fraction : float or False
+        If float, fraction of total number of trials to sample (0..1).
+        If False, use NSamples directly.
+
+    Returns
+    -------
+    arr_pokes_sub, distance_seq_sub, port_seq_sub, lag_port_seq_sub
+        Subsampled arrays with consistent indexing.
+    """
+    n = len(arr_pokes)
+
+    if fraction is False:
+        if NSamples is None:
+            raise ValueError("If fraction=False, NSamples must be specified.")
+        n_samples = NSamples
+    else:
+        n_samples = int(n * fraction)
+
+    idx = np.random.choice(n, n_samples, replace=False)
+
+    return (
+        arr_pokes[idx],
+        distance_seq[idx],
+        port_seq[idx],
+        lag_port_seq[idx],
+    )
+
+
+def dataset_MI_using_avgpokes(ALL_portsPoked_REC, ALL_PORTS_REC, ALL_PORTS_LAGS_REC, ALL_avgportsPoked_REC):
+    """
+    Build MI-related dataset using BOTH trial histograms and avg angular pokes.
+
+    This is your old dataset_MI variant that also returns arr_pokes (avg poke angles).
+
+    Returns
+    -------
+    Big_Hist_data : ndarray
+        Total counts per trial (sum over ports).
+    arr_pokes : ndarray
+        Average poke angles per trial (taken from ALL_avgportsPoked_REC).
+    arr_ports : ndarray
+        Ports at day t.
+    lags_arr_ports : ndarray
+        Ports at day t-1 (lag).
+    distance_seq : ndarray
+        Circular distance between ports in 'port units' (0..4).
+    arr_all_trials_pokes : ndarray
+        Full histogram data per trial (n_trials x 8).
+    arr_all_trials_pokes_polar : ndarray
+        Same pokes converted to angular codes (per session).
+    """
+    from utils.angles import circular_distance, convert_to_angular_poked
+    from utils.constants import ANG_RAD_DICT
+    from utils.histogram import hist_all
+
+    port_seqs = np.concatenate([ALL_PORTS_REC[aa] for aa in range(len(ALL_PORTS_REC))])
+    lags_port_seqs = np.concatenate([ALL_PORTS_LAGS_REC[aa] for aa in range(len(ALL_PORTS_LAGS_REC))])
+
+    arr_ports = port_seqs[lags_port_seqs > 0]
+    lags_arr_ports = lags_port_seqs[lags_port_seqs > 0]
+
+    hist_seqs = np.concatenate([ALL_avgportsPoked_REC[aa] for aa in range(len(ALL_avgportsPoked_REC))])
+    arr_pokes = hist_seqs[lags_port_seqs > 0]
+
+    all_trials_hist = hist_all(ALL_PORTS_REC, ALL_portsPoked_REC, 56)
+    arr_all_trials_pokes = np.concatenate([all_trials_hist[aa] for aa in range(len(all_trials_hist))])[lags_port_seqs > 0]
+
+    port_seq_rad = np.vectorize(ANG_RAD_DICT.get)(np.array(arr_ports))
+    lags_port_seq_rad = np.vectorize(ANG_RAD_DICT.get)(np.array(lags_arr_ports))
+
+    distance_seq = circular_distance(port_seq_rad, lags_port_seq_rad) * 8 / (2 * np.pi)
+    Big_Hist_data = np.sum(arr_all_trials_pokes, axis=1)
+
+    arr_all_trials_pokes_polar = convert_to_angular_poked(arr_all_trials_pokes, by_trial=False)
+
+    return (
+        Big_Hist_data,
+        arr_pokes,
+        arr_ports,
+        lags_arr_ports,
+        distance_seq,
+        arr_all_trials_pokes,
+        arr_all_trials_pokes_polar,
+    )
 
